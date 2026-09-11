@@ -1,13 +1,21 @@
+/* Essa primeira regra é o segredo para a tabela não vazar da caixa no celular */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f7f6;
-  margin: 0;
   padding: 20px;
   color: #333;
+  overflow-x: hidden; /* Evita que a tela fique balançando para os lados no celular */
 }
 
 .container {
   max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   background-color: #fff;
   padding: 25px;
@@ -16,7 +24,7 @@ body {
 }
 
 h1, h2 { text-align: center; color: #2c3e50; }
-h1 { margin-bottom: 25px; }
+h1 { margin-bottom: 25px; padding-top: 10px; }
 
 /* Controles Superiores */
 .controls {
@@ -30,17 +38,18 @@ h1 { margin-bottom: 25px; }
 label { font-weight: bold; margin-right: 5px; }
 
 select, input[type="text"], input[type="number"], input[type="date"] {
-  padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px;
-  font-size: 13px; box-sizing: border-box;
+  padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
+  font-size: 13px; width: 100%;
 }
 
 td input[type="text"], td input[type="date"], td .valor-total, td .gasto-valor {
-  width: 95%; min-width: 100px;
+  width: 100%; min-width: 100px;
 }
 
-button {
-  color: white; border: none; padding: 8px 12px; border-radius: 4px;
+button, .btn-import {
+  color: white; border: none; padding: 10px 15px; border-radius: 4px;
   cursor: pointer; font-weight: bold; font-size: 13px; transition: background 0.2s;
+  display: inline-block; text-align: center;
 }
 
 .btn-add { background-color: #27ae60; }
@@ -54,44 +63,41 @@ button {
 .btn-danger { background-color: #e74c3c; }
 .btn-danger:hover { background-color: #c0392b; }
 
-/* ===== ABAS (AJUSTADAS PARA MOBILE) ===== */
+/* ===== ABAS ===== */
 .tabs-nav { 
   display: flex; 
-  flex-wrap: wrap; /* Permite quebrar linha se não couber */
+  flex-wrap: wrap; 
   border-bottom: 2px solid #bdc3c7; 
   margin-bottom: 20px; 
   gap: 5px; 
 }
 
 .tab-button {
-  background-color: #ecf0f1; 
-  color: #7f8c8d; 
-  padding: 12px 20px; 
-  border: none;
-  border-radius: 6px 6px 0 0; 
-  font-size: 14px;
-  font-weight: bold; 
-  cursor: pointer; 
-  transition: all 0.2s;
-  flex-grow: 1; /* Faz os botões se ajustarem dividindo o espaço */
-  text-align: center;
-  white-space: nowrap; /* Evita texto quebrado no meio da palavra */
+  background-color: #ecf0f1; color: #7f8c8d; padding: 12px 20px; border: none;
+  border-radius: 6px 6px 0 0; font-size: 14px; font-weight: bold; cursor: pointer; 
+  transition: all 0.2s; flex-grow: 1; text-align: center; white-space: nowrap;
 }
 
 .tab-button.active { background-color: #34495e; color: white; }
 
-/* Adicionado scroll lateral para telas pequenas (Mobile) */
+/* Caixa que segura a tabela e permite o "arrastar pro lado" */
 .tab-content { 
   display: none; 
   width: 100%;
   overflow-x: auto; 
-  -webkit-overflow-scrolling: touch; /* Suavidade no scroll de iPhones */
+  -webkit-overflow-scrolling: touch; 
+  padding-bottom: 10px;
 }
 .tab-content.active { display: block; }
 
 /* ===== TABELAS ===== */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; /* Garante que a tabela não esmague os inputs */ }
-th, td { border: 1px solid #e0e0e0; padding: 6px; text-align: left; vertical-align: middle; font-size: 13px;}
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-top: 10px; 
+  min-width: 1000px; /* Força a tabela a manter a largura pra não esmagar os campos */
+}
+th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; vertical-align: middle; font-size: 13px;}
 th { background-color: #34495e; color: white; font-size: 12px; }
 tr:nth-child(even) { background-color: #f9f9f9; }
 tr.linha-paga { background-color: #e8f8f5 !important; }
@@ -107,13 +113,12 @@ tr.linha-paga { background-color: #e8f8f5 !important; }
 .info-badge { font-size: 10px; color: #e67e22; margin-top: 2px; }
 .file-name-display { font-size: 10px; color: #2980b9; font-weight: bold; word-break: break-all; }
 
-/* Nova Área do Google Drive */
+/* Área do Google Drive */
 .drive-container {
   display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap;
   background-color: #f8f9fa; padding: 15px; border-radius: 6px;
   border-left: 5px solid #2980b9; margin-bottom: 15px;
 }
-.drive-container input { width: 100%; margin-top: 5px; }
 
 /* ===== RESUMO FINANCEIRO E GRÁFICO ===== */
 .resumo-grid {
@@ -139,28 +144,89 @@ tr.linha-paga { background-color: #e8f8f5 !important; }
 }
 .acoes-cell { display: flex; gap: 5px; flex-wrap: wrap; }
 
-/* ===== AJUSTES ESPECÍFICOS PARA CELULAR ===== */
+
+/* =======================================================
+   REGRAS ESPECÍFICAS PARA CELULAR (Telas pequenas)
+   ======================================================= */
 @media (max-width: 768px) {
   body { padding: 10px; }
-  .container { padding: 15px; }
   
-  .controls { flex-direction: column; align-items: stretch; }
-  .select-group { flex-direction: column; align-items: stretch; }
-  .select-group div { display: flex; justify-content: space-between; align-items: center; }
-  .btn-group { justify-content: space-between; }
-  .btn-group button { flex-grow: 1; }
+  .container { 
+    padding: 15px; 
+    border-radius: 6px; 
+  }
   
-  /* Arredonda todos os cantos dos botões de abas quando eles "empilham" */
-  .tabs-nav { border-bottom: none; }
-  .tab-button { border-radius: 6px; margin-bottom: 5px; padding: 10px 5px; font-size: 13px; }
+  /* Organiza a caixa cinza do topo para empilhar tudo */
+  .controls { 
+    flex-direction: column; 
+    align-items: stretch; 
+    gap: 15px;
+  }
+  
+  /* Arruma a caixa de "Mês e Ano" */
+  .select-group { 
+    flex-direction: column; 
+    align-items: stretch; 
+    width: 100%;
+  }
+  .select-group > div { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%;
+  }
+  
+  /* Faz os botões superiores ficarem gigantes e ocuparem 100% da tela */
+  .btn-group { 
+    flex-direction: column; 
+    width: 100%; 
+    gap: 8px;
+  }
+  .btn-group button, .btn-group label { 
+    width: 100%; 
+  }
+  
+  /* Transforma as abas em botões de blocos fáceis de tocar */
+  .tabs-nav { 
+    flex-direction: column; 
+    border-bottom: none; 
+    gap: 8px; 
+  }
+  .tab-button { 
+    border-radius: 6px; 
+    width: 100%; 
+    padding: 15px; 
+  }
+  
+  /* Arruma o botão da aba do Google Drive */
+  .drive-container { 
+    flex-direction: column; 
+    align-items: stretch; 
+  }
+  .drive-container button { 
+    width: 100%; 
+  }
+  
+  /* Botão "Adicionar Unidade" fica com 100% da largura na tabela */
+  .btn-add {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  /* O título "Receita de Aluguéis" e o botão não ficam mais na mesma linha */
+  #abaAlugueis > div, #abaGastos > div {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  h2 { margin-bottom: 15px; }
 }
+
 
 /* ===== MODO IMPRESSÃO (PDF) ===== */
 @media print {
-  .btn-group, .file-input, .info-badge, .btn-danger, .btn-add, .controls, .tabs-nav, .no-print {
+  .btn-group, .file-input, .info-badge, .btn-danger, .btn-add, .controls, .tabs-nav, .drive-container, .no-print {
     display: none !important;
   }
   .tab-content { display: block !important; margin-bottom: 30px; overflow-x: visible; }
-  table { min-width: auto; } /* No PDF a tabela deve se ajustar na folha */
+  table { min-width: auto; } /* No PDF a tabela deve se ajustar na folha para não cortar */
   .grafico-container { break-inside: avoid; }
 }
