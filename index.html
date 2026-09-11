@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Aluguel e Gastos</title>
+  
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <div class="container" id="areaRelatorio">
+    <h1>Sistema de Controle de Aluguel</h1>
+
+    <div class="controls">
+      <div class="select-group">
+        <div>
+          <label for="anoSelect">Ano:</label>
+          <select id="anoSelect" onchange="carregarData()"></select>
+        </div>
+        <div>
+          <label for="mesSelect">Mês:</label>
+          <select id="mesSelect" onchange="carregarData()">
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-import" style="background-color: #2980b9; color: white;" onclick="sincronizarDoGitHub()">🔄 Sincronizar Nuvem</button>
+        <button class="btn-export" style="background-color: #d35400; color: white;" onclick="exportarDadosNuvem()">💾 Salvar para o GitHub</button>
+        <button class="btn-pdf" onclick="gerarPDF()">📄 Exportar Relatório PDF</button>
+        <button class="btn-copy" onclick="duplicarParaMesesSeguintes()">📋 Copiar para meses</button>
+      </div>
+    </div>
+
+    <!-- Navegação das Abas -->
+    <div class="tabs-nav no-print">
+      <button class="tab-button active" onclick="abrirAba('abaAlugueis', this)">🏢 Aluguéis / Receitas</button>
+      <button class="tab-button" onclick="abrirAba('abaGastos', this)">💸 Gastos / Despesas</button>
+      <button class="tab-button" onclick="abrirAba('abaComprovantes', this)">🧾 Comprovantes Pix</button>
+      <button class="tab-button" onclick="abrirAba('abaResumo', this)">📊 Resumo Financeiro</button>
+    </div>
+
+    <!-- ABA 1: Aluguéis -->
+    <div id="abaAlugueis" class="tab-content active">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="text-align: left;">Receita de Aluguéis</h2>
+        <button class="btn-add no-print" onclick="adicionarLinhaUnidade()">+ Adicionar Unidade</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Apartamento / Loja</th>
+            <th>Morador / Inquilino</th>
+            <th style="width: 85px;">Valor Total Aluguel</th>
+            <th style="width: 175px;">Pagamento (Partes 1 e 2)</th>
+            <th style="width: 115px;">Data Pagto</th>
+            <th style="width: 70px;">Pago?</th>
+            <th style="width: 75px;">Impresso?</th>
+            <th class="no-print" style="width: 125px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpoUnidades"></tbody>
+      </table>
+    </div>
+
+    <!-- ABA 2: Gastos -->
+    <div id="abaGastos" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="text-align: left;">Gastos do Mês</h2>
+        <button class="btn-add no-print" onclick="adicionarLinhaGasto()">+ Adicionar Gasto</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição do Gasto</th>
+            <th style="width: 250px;">Valor do Gasto (R$)</th>
+            <th class="no-print" style="width: 100px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpoGastos"></tbody>
+      </table>
+    </div>
+
+    <!-- NOVA ABA 3: Comprovantes Pix -->
+    <div id="abaComprovantes" class="tab-content">
+      <h2 style="text-align: left;">Verificação de Comprovantes Pix</h2>
+      
+      <div class="drive-container no-print">
+        <div style="flex: 1;">
+          <label for="linkDrive">🔗 Link da Pasta do Google Drive deste mês:</label>
+          <input type="text" id="linkDrive" placeholder="Cole o link da pasta do Google Drive aqui..." oninput="salvarEstado()">
+        </div>
+        <button class="btn-copy" onclick="abrirDrive()">Acessar Drive</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Apartamento / Loja</th>
+            <th>Morador</th>
+            <th>Nome Sugerido do Arquivo</th>
+            <th style="width: 150px;">Salvo no Drive?</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpoComprovantes">
+          <!-- Preenchido automaticamente via JS com quem pagou em Pix -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ABA 4: Resumo -->
+    <div id="abaResumo" class="tab-content">
+      <h2 style="text-align: left;">Balanço Financeiro</h2>
+      <div class="resumo-grid">
+        <div class="card-resumo dinheiro">
+          <div class="card-titulo">Em Dinheiro</div>
+          <div class="card-valor" id="resumoDinheiro">R$ 0,00</div>
+        </div>
+        <div class="card-resumo pix">
+          <div class="card-titulo">Em Pix</div>
+          <div class="card-valor" id="resumoPix">R$ 0,00</div>
+        </div>
+        <div class="card-resumo cheque">
+          <div class="card-titulo">Em Cheque</div>
+          <div class="card-valor" id="resumoCheque">R$ 0,00</div>
+        </div>
+        <div class="card-resumo receita">
+          <div class="card-titulo">Receita Total Paga</div>
+          <div class="card-valor" id="resumoReceita">R$ 0,00</div>
+        </div>
+        <div class="card-resumo gasto">
+          <div class="card-titulo">Total de Gastos</div>
+          <div class="card-valor" id="resumoGastos">R$ 0,00</div>
+        </div>
+        <div class="card-resumo saldo">
+          <div class="card-titulo">Saldo Final (Sobras)</div>
+          <div class="card-valor" id="resumoSaldo">R$ 0,00</div>
+        </div>
+      </div>
+
+      <div class="grafico-container">
+        <canvas id="graficoPizza"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

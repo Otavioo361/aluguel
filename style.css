@@ -1,0 +1,112 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+.container {
+  max-width: 1250px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+h1, h2 { text-align: center; color: #2c3e50; }
+h1 { margin-bottom: 25px; }
+
+.controls {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; background-color: #ecf0f1; padding: 15px;
+  border-radius: 6px; flex-wrap: wrap; gap: 15px;
+}
+
+.select-group { display: flex; gap: 15px; align-items: center; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+label { font-weight: bold; margin-right: 5px; }
+
+select, input[type="text"], input[type="number"], input[type="date"] {
+  padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px;
+  font-size: 13px; box-sizing: border-box;
+}
+
+td input[type="text"], td input[type="number"], td input[type="date"], td select {
+  width: 95%;
+}
+
+button {
+  color: white; border: none; padding: 8px 12px; border-radius: 4px;
+  cursor: pointer; font-weight: bold; font-size: 13px; transition: background 0.2s;
+}
+
+.btn-add { background-color: #27ae60; }
+.btn-add:hover { background-color: #219150; }
+.btn-copy { background-color: #2980b9; }
+.btn-copy:hover { background-color: #1c5980; }
+.btn-pdf { background-color: #8e44ad; }
+.btn-pdf:hover { background-color: #71368a; }
+.btn-recibo { background-color: #16a085; }
+.btn-recibo:hover { background-color: #117a65; }
+.btn-danger { background-color: #e74c3c; }
+.btn-danger:hover { background-color: #c0392b; }
+
+.tabs-nav { display: flex; border-bottom: 2px solid #bdc3c7; margin-bottom: 20px; gap: 5px; }
+.tab-button {
+  background-color: #ecf0f1; color: #7f8c8d; padding: 12px 20px; border: none;
+  border-top-left-radius: 6px; border-top-right-radius: 6px; font-size: 15px;
+  font-weight: bold; cursor: pointer; transition: all 0.2s;
+}
+.tab-button.active { background-color: #34495e; color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #e0e0e0; padding: 8px; text-align: left; vertical-align: middle; }
+th { background-color: #34495e; color: white; font-size: 13px; }
+tr:nth-child(even) { background-color: #f9f9f9; }
+tr.linha-paga { background-color: #e8f8f5 !important; }
+
+.status-container { display: flex; align-items: center; gap: 5px; }
+.status-container input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.status-texto { font-weight: bold; font-size: 12px; }
+.status-pago { color: #27ae60; }
+.status-pendente { color: #e74c3c; }
+
+.pix-container { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+.file-input { font-size: 11px; }
+.info-badge { font-size: 10px; color: #e67e22; margin-top: 2px; }
+.file-name-display { font-size: 11px; color: #2980b9; font-weight: bold; word-break: break-all; }
+
+.resumo-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px; margin-top: 15px;
+}
+.card-resumo {
+  padding: 15px; border-radius: 6px; background-color: #f8f9fa;
+  border-left: 5px solid #bdc3c7; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.card-resumo.dinheiro { border-left-color: #f1c40f; }
+.card-resumo.pix { border-left-color: #3498db; }
+.card-resumo.cheque { border-left-color: #e67e22; }
+.card-resumo.receita { border-left-color: #2ecc71; }
+.card-resumo.gasto { border-left-color: #e74c3c; }
+.card-resumo.saldo { border-left-color: #9b59b6; background-color: #f4ecf7; }
+.card-titulo { font-size: 11px; color: #7f8c8d; text-transform: uppercase; font-weight: bold; }
+.card-valor { font-size: 18px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
+
+.grafico-container {
+  width: 100%; max-width: 350px; margin: 30px auto 10px auto;
+  background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.acoes-cell { display: flex; gap: 5px; flex-wrap: wrap; }
+
+@media print {
+  .btn-group, .file-input, .info-badge, .btn-danger, .btn-add, .controls, .tabs-nav, .no-print {
+    display: none !important;
+  }
+  .tab-content { display: block !important; margin-bottom: 30px; }
+  .grafico-container { break-inside: avoid; }
+}
