@@ -52,14 +52,15 @@
     <div class="tabs-nav no-print">
       <button class="tab-button active" onclick="abrirAba('abaAlugueis', this)">🏢 Aluguéis / Receitas</button>
       <button class="tab-button" onclick="abrirAba('abaGastos', this)">💸 Gastos / Despesas</button>
+      <button class="tab-button" onclick="abrirAba('abaContas', this)">📅 Contas a Pagar</button>
       <button class="tab-button" onclick="abrirAba('abaComprovantes', this)">🧾 Comprovantes Pix</button>
       <button class="tab-button" onclick="abrirAba('abaResumo', this)">📊 Resumo Financeiro</button>
     </div>
 
     <!-- ABA 1: Aluguéis -->
     <div id="abaAlugueis" class="tab-content active">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="text-align: left;">Receita de Aluguéis</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2 style="text-align: left; margin: 0;">Receita de Aluguéis</h2>
         <button class="btn-add no-print" onclick="adicionarLinhaUnidade()">+ Adicionar Unidade</button>
       </div>
       <table>
@@ -81,8 +82,8 @@
 
     <!-- ABA 2: Gastos -->
     <div id="abaGastos" class="tab-content">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="text-align: left;">Gastos do Mês</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2 style="text-align: left; margin: 0;">Gastos do Mês</h2>
         <button class="btn-add no-print" onclick="adicionarLinhaGasto()">+ Adicionar Gasto</button>
       </div>
       <table>
@@ -97,9 +98,32 @@
       </table>
     </div>
 
-    <!-- NOVA ABA 3: Comprovantes Pix -->
+    <!-- ABA 3: Contas (Lembretes) -->
+    <div id="abaContas" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2 style="text-align: left; margin: 0;">Lembretes de Contas a Pagar</h2>
+        <button class="btn-add no-print" onclick="adicionarLinhaConta()">+ Adicionar Conta</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome da Conta (Ex: Água, Luz, Condomínio)</th>
+            <th style="width: 130px;">Valor (R$)</th>
+            <th style="width: 140px;">Vencimento</th>
+            <th style="width: 90px;">Pago?</th>
+            <th class="no-print" style="width: 100px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCorpoContas"></tbody>
+      </table>
+    </div>
+
+    <!-- ABA 4: Comprovantes Pix -->
     <div id="abaComprovantes" class="tab-content">
-      <h2 style="text-align: left;">Verificação de Comprovantes Pix</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 15px; gap: 10px;">
+        <h2 style="text-align: left; margin: 0;">Verificação de Comprovantes Pix</h2>
+        <button class="btn-pdf no-print" onclick="imprimirRelatorioPix()">🖨️ Imprimir / PDF da Tabela Pix</button>
+      </div>
       
       <div class="drive-container no-print">
         <div style="flex: 1;">
@@ -114,19 +138,21 @@
           <tr>
             <th>Apartamento / Loja</th>
             <th>Morador</th>
+            <th style="width: 90px;">Data</th>
+            <th style="width: 110px;">Valor Pix</th>
             <th>Nome Sugerido do Arquivo</th>
-            <th style="width: 150px;">Salvo no Drive?</th>
+            <th style="width: 120px;">Salvo no Drive?</th>
           </tr>
         </thead>
         <tbody id="tabelaCorpoComprovantes">
-          <!-- Preenchido automaticamente via JS com quem pagou em Pix -->
+          <!-- Preenchido automaticamente via JS -->
         </tbody>
       </table>
     </div>
 
-    <!-- ABA 4: Resumo -->
+    <!-- ABA 5: Resumo -->
     <div id="abaResumo" class="tab-content">
-      <h2 style="text-align: left;">Balanço Financeiro</h2>
+      <h2 style="text-align: left; margin: 0; margin-bottom: 15px;">Balanço Financeiro</h2>
       <div class="resumo-grid">
         <div class="card-resumo dinheiro">
           <div class="card-titulo">Em Dinheiro</div>

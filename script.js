@@ -53,13 +53,17 @@ function carregarData() {
   const chave = ObterChaveAtual();
   const tabelaUnidades = document.getElementById('tabelaCorpoUnidades');
   const tabelaGastos = document.getElementById('tabelaCorpoGastos');
+  const tabelaContas = document.getElementById('tabelaCorpoContas');
 
   tabelaUnidades.innerHTML = '';
   tabelaGastos.innerHTML = '';
+  tabelaContas.innerHTML = '';
 
   if (!bancoDeDados[chave]) {
-    bancoDeDados[chave] = { unidades: [], gastos: [], linkDrive: '' };
+    bancoDeDados[chave] = { unidades: [], gastos: [], contas: [], linkDrive: '' };
   }
+  
+  if (!bancoDeDados[chave].contas) bancoDeDados[chave].contas = [];
 
   document.getElementById('linkDrive').value = bancoDeDados[chave].linkDrive || '';
 
@@ -86,6 +90,14 @@ function carregarData() {
     });
   }
 
+  if (bancoDeDados[chave].contas.length === 0) {
+    adicionarLinhaConta();
+  } else {
+    bancoDeDados[chave].contas.forEach(conta => {
+      adicionarLinhaContaComDados(conta.nome, conta.dataVencimento, conta.valor, conta.pago);
+    });
+  }
+
   calcularTotais();
   renderizarAbaComprovantes();
 }
@@ -100,16 +112,13 @@ function adicionarLinhaUnidadeComDados(apt = '', morador = '', valorTotal = '', 
 
   if (pago) tr.classList.add('linha-paga');
 
-  // Amarramos as informações ocultas na linha para não se perderem ao excluir ou mover
   tr.setAttribute('data-salvodrive', salvoDrive);
   tr.setAttribute('data-nomepix1', nomePix1);
   tr.setAttribute('data-nomepix2', nomePix2);
 
   let htmlLinha = '<td><input type="text" placeholder="Apt 101" value="' + apt + '" oninput="salvarEstado()"><\/td>';
   htmlLinha += '<td><input type="text" placeholder="Nome" value="' + morador + '" oninput="salvarEstado()"><\/td>';
-  
   htmlLinha += '<td><input type="number" step="0.01" class="valor-total" placeholder="1500.00" value="' + valorTotal + '" oninput="salvarEstado();"><\/td>';
-
   htmlLinha += '<td>';
   htmlLinha += '<div style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed #ccc;">';
   htmlLinha += '<div style="display:flex; gap:4px; align-items:center;">';
@@ -135,15 +144,11 @@ function adicionarLinhaUnidadeComDados(apt = '', morador = '', valorTotal = '', 
   htmlLinha += '<option value="Boleto" ' + (modo2 === 'Boleto' ? 'selected' : '') + '>Boleto<\/option>';
   htmlLinha += '<\/select><\/div><div class="pix-area-2"><\/div>';
   htmlLinha += '<\/td>';
-  
-  htmlLinha += '<td><input type="date" value="' + dataPagto + '" onchange="salvarEstado()"><\/td>';
-  
+  htmlLinha += '<td><input type="date" value="' + dataPagto + '" onchange="salvarEstado(); renderizarAbaComprovantes();"><\/td>';
   htmlLinha += '<td><div class="status-container"><input type="checkbox" class="check-pago" ' + (pago ? 'checked' : '') + ' onchange="atualizarStatusPago(this); salvarEstado(); calcularTotais();">';
   htmlLinha += '<span class="status-texto ' + (pago ? 'status-pago' : 'status-pendente') + '">' + (pago ? 'Pago' : 'Pendente') + '<\/span><\/div><\/td>';
-  
   htmlLinha += '<td><div class="status-container"><input type="checkbox" class="check-impresso" ' + (impresso ? 'checked' : '') + ' onchange="atualizarStatusImpresso(this); salvarEstado();">';
   htmlLinha += '<span class="status-texto ' + (impresso ? 'status-pago' : 'status-pendente') + '">' + (impresso ? 'Sim' : 'Não') + '<\/span><\/div><\/td>';
-
   htmlLinha += '<td class="no-print"><div class="acoes-cell"><button class="btn-recibo" onclick="gerarReciboLinha(this)">📜 Recibo<\/button>';
   htmlLinha += '<button class="btn-danger" onclick="removerLinha(this)">Excluir<\/button><\/div><\/td>';
 
@@ -163,6 +168,39 @@ function adicionarLinhaGastoComDados(nome = '', valor = '') {
                  '<td><input type="number" step="0.01" class="gasto-valor" placeholder="250.00" value="' + valor + '" oninput="salvarEstado(); calcularTotais();"><\/td>' +
                  '<td class="no-print"><button class="btn-danger" onclick="removerLinha(this)">Excluir<\/button><\/td>';
   tabela.appendChild(tr);
+}
+
+function adicionarLinhaConta() { adicionarLinhaContaComDados('', '', '', false); }
+
+function adicionarLinhaContaComDados(nome = '', dataVencimento = '', valor = '', pago = false) {
+  const tabela = document.getElementById('tabelaCorpoContas');
+  const tr = document.createElement('tr');
+  
+  if (pago) tr.classList.add('linha-paga');
+
+  let html = '<td><input type="text" placeholder="Ex: Conta de Água, IPTU" value="' + nome + '" oninput="salvarEstado()"><\/td>';
+  html += '<td><input type="number" step="0.01" class="conta-valor" placeholder="150.00" value="' + valor + '" oninput="salvarEstado()"><\/td>';
+  html += '<td><input type="date" value="' + dataVencimento + '" onchange="salvarEstado()"><\/td>';
+  html += '<td><div class="status-container"><input type="checkbox" class="check-conta-pago" ' + (pago ? 'checked' : '') + ' onchange="atualizarStatusConta(this); salvarEstado();">';
+  html += '<span class="status-texto ' + (pago ? 'status-pago' : 'status-pendente') + '">' + (pago ? 'Pago' : 'Pendente') + '<\/span><\/div><\/td>';
+  html += '<td class="no-print"><button class="btn-danger" onclick="removerLinha(this)">Excluir<\/button><\/td>';
+  
+  tr.innerHTML = html;
+  tabela.appendChild(tr);
+}
+
+function atualizarStatusConta(checkbox) {
+  const tr = checkbox.closest('tr');
+  const statusTexto = checkbox.nextElementSibling;
+  if (checkbox.checked) {
+    tr.classList.add('linha-paga');
+    statusTexto.textContent = 'Pago';
+    statusTexto.className = 'status-texto status-pago';
+  } else {
+    tr.classList.remove('linha-paga');
+    statusTexto.textContent = 'Pendente';
+    statusTexto.className = 'status-texto status-pendente';
+  }
 }
 
 function atualizarStatusPago(checkbox) {
@@ -190,7 +228,6 @@ function atualizarStatusImpresso(checkbox) {
   }
 }
 
-// Atualizada: Removeu o input file. Apenas exibe a mensagem amigável.
 function alterarModoPagamento(selectElement, numParte) {
   const td = selectElement.closest('td');
   const pixArea = td.querySelector('.pix-area-' + numParte);
@@ -200,7 +237,6 @@ function alterarModoPagamento(selectElement, numParte) {
   } else {
     pixArea.innerHTML = '';
   }
-  
   renderizarAbaComprovantes();
 }
 
@@ -211,10 +247,6 @@ function removerLinha(btn) {
   calcularTotais();
   renderizarAbaComprovantes();
 }
-
-// ----------------------------------------------------
-// LÓGICA DA ABA DE COMPROVANTES E GOOGLE DRIVE
-// ----------------------------------------------------
 
 function abrirDrive() {
   const link = document.getElementById('linkDrive').value;
@@ -252,6 +284,17 @@ function renderizarAbaComprovantes() {
       const apt = inputsTexto[0].value || 'Unidade';
       const morador = inputsTexto[1].value || 'Morador';
       
+      const dataPagto = linha.querySelector('input[type="date"]').value;
+      let dataFormatada = '-';
+      if (dataPagto) {
+        const partes = dataPagto.split('-');
+        dataFormatada = partes[2] + '/' + partes[1] + '/' + partes[0];
+      }
+
+      let valorPixTotal = 0;
+      if (modo1 === 'Pix') valorPixTotal += parseFloat(linha.querySelector('.valor-1').value) || 0;
+      if (modo2 === 'Pix') valorPixTotal += parseFloat(linha.querySelector('.valor-2').value) || 0;
+
       const salvo = linha.getAttribute('data-salvodrive') === 'true';
 
       let inputsHtml = '';
@@ -270,6 +313,8 @@ function renderizarAbaComprovantes() {
       
       let html = '<td>' + apt + '<\/td>';
       html += '<td>' + morador + '<\/td>';
+      html += '<td>' + dataFormatada + '<\/td>';
+      html += '<td style="font-weight: bold; color: #27ae60;">' + formatarMoeda(valorPixTotal) + '<\/td>';
       html += '<td>' + inputsHtml + '<\/td>'; 
       
       html += '<td><div class="status-container"><input type="checkbox" ' + (salvo ? 'checked' : '') + ' onchange="marcarDrive(' + index + ', this.checked)">';
@@ -290,7 +335,69 @@ function marcarDrive(indexUnidade, isChecked) {
   }
 }
 
-// ----------------------------------------------------
+function imprimirRelatorioPix() {
+  const mesIndex = document.getElementById('mesSelect').value;
+  const ano = document.getElementById('anoSelect').value;
+  const nomeMes = nomesMeses[mesIndex];
+
+  const linhas = document.querySelectorAll('#tabelaCorpoComprovantes tr');
+  
+  if (linhas.length === 0) {
+    alert('Não há pagamentos em Pix cadastrados neste mês para gerar o relatório.');
+    return;
+  }
+
+  const janelaRelatorio = window.open('', '_blank', 'width=900,height=700');
+  
+  let html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório Pix - ' + nomeMes + '/' + ano + '<\/title>';
+  html += '<style>';
+  html += 'body { font-family: Arial, sans-serif; padding: 20px; color: #333; }';
+  html += 'h2 { text-align: center; color: #2c3e50; }';
+  html += 'table { width: 100%; border-collapse: collapse; margin-top: 20px; }';
+  html += 'th, td { border: 1px solid #ccc; padding: 10px; text-align: left; font-size: 14px; }';
+  html += 'th { background-color: #34495e; color: white; }';
+  html += 'tr:nth-child(even) { background-color: #f9f9f9; }';
+  html += '@media print { button { display: none; } }';
+  html += '<\/style><\/head><body>';
+  
+  html += '<h2>Relatório de Comprovantes Pix - ' + nomeMes + ' / ' + ano + '<\/h2>';
+  html += '<table>';
+  html += '<thead><tr><th>Apartamento / Loja<\/th><th>Morador / Inquilino<\/th><th>Data do Pagamento<\/th><th>Valor Pix<\/th><\/tr><\/thead>';
+  html += '<tbody>';
+
+  let totalPixRelatorio = 0;
+
+  linhas.forEach(linha => {
+    const colunas = linha.querySelectorAll('td');
+    const apt = colunas[0].innerText;
+    const morador = colunas[1].innerText;
+    const data = colunas[2].innerText;
+    const valorTexto = colunas[3].innerText;
+    
+    let valorTratado = valorTexto.replace(/[^\d,-]/g, '').replace(',', '.');
+    let valorNum = parseFloat(valorTratado) || 0;
+    totalPixRelatorio += valorNum;
+
+    html += '<tr>';
+    html += '<td>' + apt + '<\/td>';
+    html += '<td>' + morador + '<\/td>';
+    html += '<td>' + data + '<\/td>';
+    html += '<td style="font-weight: bold; color: #27ae60;">' + valorTexto + '<\/td>';
+    html += '<\/tr>';
+  });
+
+  html += '<\/tbody>';
+  html += '<tfoot><tr><td colspan="3" style="text-align: right; font-weight: bold; font-size: 16px;">TOTAL EM PIX:<\/td>';
+  html += '<td style="font-weight: bold; font-size: 16px; color: #27ae60;">' + formatarMoeda(totalPixRelatorio) + '<\/td><\/tr><\/tfoot>';
+  html += '<\/table><br>';
+  
+  html += '<div style="text-align: center; margin-top: 20px;">';
+  html += '<button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #27ae60; color: #fff; border: none; border-radius: 4px;">🖨️ Imprimir / Salvar PDF<\/button>';
+  html += '<\/div><\/body><\/html>';
+
+  janelaRelatorio.document.write(html);
+  janelaRelatorio.document.close();
+}
 
 function salvarEstado() {
   const chave = ObterChaveAtual();
@@ -328,9 +435,18 @@ function salvarEstado() {
     if (nome || valor) gastos.push({ nome, valor });
   });
 
+  const contas = [];
+  document.querySelectorAll('#tabelaCorpoContas tr').forEach(linha => {
+    const nome = linha.querySelector('input[type="text"]') ? linha.querySelector('input[type="text"]').value : '';
+    const valor = linha.querySelector('.conta-valor') ? linha.querySelector('.conta-valor').value : '';
+    const dataVencimento = linha.querySelector('input[type="date"]') ? linha.querySelector('input[type="date"]').value : '';
+    const pago = linha.querySelector('.check-conta-pago') ? linha.querySelector('.check-conta-pago').checked : false;
+    if (nome || dataVencimento || valor) contas.push({ nome, valor, dataVencimento, pago });
+  });
+
   const linkDrive = document.getElementById('linkDrive').value;
 
-  bancoDeDados[chave] = { unidades, gastos, linkDrive };
+  bancoDeDados[chave] = { unidades, gastos, contas, linkDrive };
   localStorage.setItem('controle_aluguel_v3', JSON.stringify(bancoDeDados));
 }
 
@@ -494,8 +610,9 @@ function gerarReciboLinha(btn) {
   }
 }
 
+// CORREÇÃO: AVANÇO DE MESES DAS CONTAS
 function duplicarParaMesesSeguintes() {
-  const ano = document.getElementById('anoSelect').value;
+  const ano = parseInt(document.getElementById('anoSelect').value);
   const mesIndex = parseInt(document.getElementById('mesSelect').value);
   const chaveAtual = ObterChaveAtual();
   salvarEstado();
@@ -507,10 +624,11 @@ function duplicarParaMesesSeguintes() {
   if (mesIndex === 11) { alert("Você já está em Dezembro."); return; }
 
   const nomeMesAtual = nomesMeses[mesIndex];
-  if (confirm('Deseja copiar a lista de imóveis/valores de ' + nomeMesAtual + ' para os meses SEGUINTES de ' + ano + '?')) {
+  if (confirm('Deseja copiar a lista de imóveis e contas de ' + nomeMesAtual + ' para os meses SEGUINTES de ' + ano + '?')) {
+    
     for (let m = mesIndex + 1; m < 12; m++) {
       const chaveDestino = ano + '_' + m;
-      if (!bancoDeDados[chaveDestino]) bancoDeDados[chaveDestino] = { unidades: [], gastos: [], linkDrive: '' };
+      if (!bancoDeDados[chaveDestino]) bancoDeDados[chaveDestino] = { unidades: [], gastos: [], contas: [], linkDrive: '' };
 
       bancoDeDados[chaveDestino].unidades = dadosOrigem.unidades.map(function(item) {
         return {
@@ -520,9 +638,43 @@ function duplicarParaMesesSeguintes() {
           dataPagto: '', pago: false, impresso: false, salvoDrive: false, nomePix1: '', nomePix2: ''
         };
       });
+      
+      bancoDeDados[chaveDestino].contas = (dadosOrigem.contas || []).map(function(item) {
+        let novaData = '';
+        if (item.dataVencimento) {
+          let partes = item.dataVencimento.split('-'); 
+          if (partes.length === 3) {
+            let anoOriginal = parseInt(partes[0]);
+            let mesOriginal = parseInt(partes[1]);
+            let diaOriginal = parseInt(partes[2]);
+
+            // Calcula quantos meses estamos pulando a partir da aba de origem
+            let diffMeses = m - mesIndex;
+            let novoMes = mesOriginal + diffMeses;
+            let novoAno = anoOriginal;
+
+            // Se virar o ano, ajusta o mês e aumenta o ano
+            while (novoMes > 12) {
+              novoMes -= 12;
+              novoAno += 1;
+            }
+
+            // Garante que o dia existe (Ex: não existe 31 de Fevereiro)
+            let ultimoDiaDoNovoMes = new Date(novoAno, novoMes, 0).getDate();
+            let diaDestino = diaOriginal > ultimoDiaDoNovoMes ? ultimoDiaDoNovoMes : diaOriginal;
+            
+            let mesDestinoStr = novoMes.toString().padStart(2, '0');
+            let diaDestinoStr = diaDestino.toString().padStart(2, '0');
+
+            novaData = novoAno + '-' + mesDestinoStr + '-' + diaDestinoStr;
+          }
+        }
+        return { nome: item.nome, valor: '', dataVencimento: novaData, pago: false };
+      });
     }
+    
     localStorage.setItem('controle_aluguel_v3', JSON.stringify(bancoDeDados));
-    alert('Os imóveis foram copiados com sucesso para os meses seguintes!');
+    alert('Copiado com sucesso! Os vencimentos das contas pularam automaticamente para a frente.');
   }
 }
 
