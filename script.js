@@ -478,14 +478,23 @@ function calcularTotais() {
   });
 
   const saldoFinal = totalReceitaPaga - totalGastos;
+  
+  // NOVA LÓGICA DO DINHEIRO QUE SOBROU (Dinheiro físico menos gastos físicos)
+  const dinheiroQueSobrou = totalDinheiro - totalGastos;
 
   document.getElementById('resumoDinheiro').textContent = formatarMoeda(totalDinheiro);
   document.getElementById('resumoPix').textContent = formatarMoeda(totalPix);
   document.getElementById('resumoCheque').textContent = formatarMoeda(totalCheque);
   document.getElementById('resumoReceita').textContent = formatarMoeda(totalReceitaPaga);
   document.getElementById('resumoGastos').textContent = formatarMoeda(totalGastos);
-  document.getElementById('resumoSaldo').textContent = formatarMoeda(saldoFinal);
+  
+  // Atualiza o Dinheiro que Sobrou
+  document.getElementById('resumoDinheiroSobrou').textContent = formatarMoeda(dinheiroQueSobrou);
+  const elDinheiroSobrou = document.getElementById('resumoDinheiroSobrou');
+  if (dinheiroQueSobrou < 0) elDinheiroSobrou.style.color = '#e74c3c';
+  else elDinheiroSobrou.style.color = '#16a085';
 
+  document.getElementById('resumoSaldo').textContent = formatarMoeda(saldoFinal);
   const elSaldo = document.getElementById('resumoSaldo');
   if (saldoFinal < 0) elSaldo.style.color = '#e74c3c';
   else elSaldo.style.color = '#27ae60';
@@ -610,7 +619,6 @@ function gerarReciboLinha(btn) {
   }
 }
 
-// CORREÇÃO: AVANÇO DE MESES DAS CONTAS
 function duplicarParaMesesSeguintes() {
   const ano = parseInt(document.getElementById('anoSelect').value);
   const mesIndex = parseInt(document.getElementById('mesSelect').value);
@@ -648,18 +656,15 @@ function duplicarParaMesesSeguintes() {
             let mesOriginal = parseInt(partes[1]);
             let diaOriginal = parseInt(partes[2]);
 
-            // Calcula quantos meses estamos pulando a partir da aba de origem
             let diffMeses = m - mesIndex;
             let novoMes = mesOriginal + diffMeses;
             let novoAno = anoOriginal;
 
-            // Se virar o ano, ajusta o mês e aumenta o ano
             while (novoMes > 12) {
               novoMes -= 12;
               novoAno += 1;
             }
 
-            // Garante que o dia existe (Ex: não existe 31 de Fevereiro)
             let ultimoDiaDoNovoMes = new Date(novoAno, novoMes, 0).getDate();
             let diaDestino = diaOriginal > ultimoDiaDoNovoMes ? ultimoDiaDoNovoMes : diaOriginal;
             
